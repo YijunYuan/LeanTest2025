@@ -13,10 +13,9 @@ instance dvd_partial_order : PartialOrder ℕ where
     fun a b => (dvd a b) ∧ ¬(dvd b a)
   le_refl := sorry
   le_trans := sorry
-  lt_iff_le_not_le := sorry
   le_antisymm := sorry
 
--- `≼` is the partial order we defined above, i.e. `a ≼ b ↔ a is divided by b`. Please distinguish `≼` from `≤`, which is the standard order on `ℕ`.
+-- `≼` is the partial order we defined above, i.e. `a ≼ b ↔ a is divided by b`. Please distinguish `≼` from `≤`, which is the standard order on `ℕ`. You can use `\preceq` to get `≼`.
 infixl:100 " ≼ " => @LE.le _ dvd_partial_order.toLE
 lemma dvd_equiv {a b : ℕ} : a ≼ b ↔ a ∣ b := Eq.to_iff rfl
 
@@ -34,6 +33,7 @@ theorem exists_least_element : ∃ n : ℕ, ∀ m : ℕ, n ≼ m := by
 theorem exists_greatest_element : ∃ n : ℕ, ∀ m : ℕ, m ≼ n := by
   sorry
 
+open Fin NatCast
 /- **`Problem 5`** -/
 theorem exists_supremum_ofInfinite (A : Set ℕ) (hA : A.Infinite) :
   ∃ n : ℕ, (∀ x ∈ A, x ≼ n) ∧
@@ -48,9 +48,15 @@ theorem exists_supremum_ofInfinite (A : Set ℕ) (hA : A.Infinite) :
     · have h₂ : ∃ x ∈ A, m < x := by
         by_contra! h
         let f : ℕ → Fin (m + 1) :=
-          fun n => n
+          fun n => (n : Fin (m + 1))
         have hf₁ : A.MapsTo f Set.univ := sorry
-        have hf₂ : A.InjOn f := sorry
+        have hf₂ : A.InjOn f := by
+          intro x mem_x y mem_y hf
+          rw [← Fin.val_inj] at hf
+          simp only [f, Fin.val_natCast] at hf
+          rw [Nat.mod_eq_of_lt (Nat.lt_succ.mpr (h x mem_x))] at hf
+          rw [Nat.mod_eq_of_lt (Nat.lt_succ.mpr (h y mem_y))] at hf
+          exact hf
         sorry
       rcases h₂ with ⟨x, mem, hx⟩
       exfalso
